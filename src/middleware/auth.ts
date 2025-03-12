@@ -3,7 +3,7 @@ import axios from 'axios';
 import { PostgresCredentialRepository } from '../repositories/CredentialRepository';
 
 const credentialRepository = new PostgresCredentialRepository();
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3002';
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:3003';
 
 export interface AuthenticatedRequest extends Request {
     service?: {
@@ -54,14 +54,16 @@ export async function serviceAuth(req: Request, res: Response, next: NextFunctio
     }
 
     try {
-        const response = await axios.post(`${AUTH_SERVICE_URL}/api/services/validate`, null, {
+        const response = await axios.post(`${AUTH_SERVICE_URL}/api/auth/verify`, {}, {
             headers: {
                 'X-API-Key': apiKey,
-                'X-Service-Name': serviceName
+                'X-Service-Name': serviceName,
+                'X-Target-Service': 'contact-service',
+                'Content-Type': 'application/json'
             }
         });
 
-        (req as AuthenticatedRequest).service = response.data.service;
+        (req as AuthenticatedRequest).service = response.data;
         next();
     } catch (error) {
         if (axios.isAxiosError(error) && error.response?.status === 401) {

@@ -55,14 +55,19 @@ export class PostgresCredentialRepository implements CredentialRepository {
      * @throws Error if database query fails
      */
     async validateApiKey(id: string, apiKey: string): Promise<boolean> {
+        console.log('Validating:', id, apiKey);
         try {
             const result = await this.db.query(
                 'SELECT api_key FROM credentials WHERE id = $1',
                 [id]
             );
 
-            if (!result.rows[0]) return false;
-            return compare(apiKey, result.rows[0].api_key);
+            if (result.rows.length === 0) {
+                return false;
+            }
+
+            const hashedApiKey = result.rows[0].api_key;
+            return await compare(apiKey, hashedApiKey);
         } catch (error) {
             throw new Error(`Failed to validate API key: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }

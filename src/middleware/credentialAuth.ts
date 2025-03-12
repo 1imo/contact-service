@@ -18,6 +18,8 @@ export async function validateApiKey(req: Request, res: Response, next: NextFunc
         return res.status(400).json({ error: 'Credential ID is required' });
     }
 
+    console.log(req.headers, req.body)
+
     try {
         const isValid = await credentialRepository.validateApiKey(credentialId, apiKey);
         if (!isValid) {
